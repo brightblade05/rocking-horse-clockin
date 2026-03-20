@@ -142,7 +142,7 @@ export async function exportEmployeesCsv() {
     })
 
     const headers = ['name', 'pin', 'email', 'phone', 'address', 'emergencyContact', 'baseRate', 'employmentType', 'hireDate', 'notes', 'location']
-    const rows = employees.map(e => headers.map(h => {
+    const rows = employees.map((e: any) => headers.map((h: string) => {
         let val: any
         if (h === 'location') val = e.location?.name
         else val = (e as any)[h]
@@ -159,14 +159,14 @@ export async function importEmployeesCsv(csvText: string) {
     const organizationId = currentUser.organizationId
 
     const lines = csvText.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim())
+    const headers = lines[0].split(',').map((h: string) => h.trim())
     let created = 0; let errors = 0
 
     for (let i = 1; i < lines.length; i++) {
         try {
-            const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'))
+            const values = lines[i].split(',').map((v: string) => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'))
             const row: Record<string, string> = {}
-            headers.forEach((h, idx) => { row[h] = values[idx] || '' })
+            headers.forEach((h: string, idx: number) => { row[h] = values[idx] || '' })
 
             if (!row.name || !row.pin) { errors++; continue }
 
