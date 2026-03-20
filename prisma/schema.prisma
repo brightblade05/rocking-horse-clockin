@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── MASTER ADMIN (platform-level) ─────────────────────────
+model MasterAdmin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // bcrypt hashed
+  name      String
+  createdAt DateTime @default(now())
+}
+
+// ─── ORGANIZATION (tenant) ─────────────────────────────────
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @unique  // "Rocking Horse Childcare"
+  slug      String   @unique  // "rocking-horse" (used in URLs)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  locations  Location[]
+  users      User[]
+  children   Child[]
+  guardians  Guardian[]
+  roles      Role[]
+  holidays   Holiday[]
+}
+
+// ─── LOCATION (per-org campus) ────────────────────────────
+model Location {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String       // "Porter", "New Caney"
+  address        String?
+  phone          String?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  users          User[]
+  children       Child[]
+
+  @@unique([organizationId, name])
+}
+
+// ─── USER (employee) ──────────────────────────────────────
+model User {
+  id             String    @id @default(uuid())
+  organizationId String
+  pin            String    // Kiosk Login (unique within org, enforced in app)
+  name           String
+  email          String?   @unique // Admin Login support
+  password       String?   // bcrypt hashed for Admin login
+  phone          String?
+  address        String?
+  emergencyContact String?
+  baseRate       Float     @default(15.00)
+  payType        String    @default("HOURLY") // HOURLY, SALARY
+  yearlySalary   Float?    
+  isAdmin        Boolean   @default(false)
+  adminRole      String    @default("NONE") // SUPERADMIN, MANAGER, FRONT_DESK, NONE
+  locationId     String?   // For location-bound admins
+  employmentType String    @default("FULL_TIME") // FULL_TIME, PART_TIME
+  isActive       Boolean   @default(true)
+  ptoRate        Float     @default(0.0)
+  ptoBalance     Float     @default(0.0)
+  hireDate       DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  location       Location?    @relation(fields: [locationId], references: [id])
+  punches        Punch[]
+  schedules      Schedule[]
+  userRoles      UserRole[]
+  timeOffRequests TimeOffRequest[]
+
+  @@unique([organizationId, pin])
+}
+
+model Role {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String       // "Bus Driver", "Lead Teacher", "Cook"
+  description    String?
+  defaultRate    Float?
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userRoles      UserRole[]
+  punches        Punch[]
+  schedules      Schedule[]
+
+  @@unique([organizationId, name])
+}
+
+model UserRole {
+  id        String @id @default(uuid())
+  userId    String
+  roleId    String
+  rate      Float
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model Punch {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String?
+  timestamp DateTime @default(now())
+  type      String   // IN, OUT, TRANSFER_START
+  note      String?
+  isModified Boolean @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role?    @relation(fields: [roleId], references: [id])
+}
+
+model Schedule {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String?
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  note      String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role?    @relation(fields: [roleId], references: [id])
+}
+
+model TimeOffRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  startDate DateTime
+  endDate   DateTime
+  reason    String
+  status    String   @default("PENDING")
+  adminNote String?
+  isPaid    Boolean  @default(false)
+  hoursRequested Float?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Holiday {
+  id             String       @id @default(uuid())
+  organizationId String
+  date           DateTime
+  name           String
+  isPaid         Boolean      @default(true)
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, date])
+}
+
+// ─── GUARDIAN & CHILD (childcare) ──────────────────────────
+model Guardian {
+  id              String   @id @default(uuid())
+  organizationId  String
+  pin             String   // 4-digit kiosk PIN (unique within org)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  secondaryPhone  String?
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+  driversLicenseId String?
+  relationshipToChild String?
+
+  guardian2FirstName  String?
+  guardian2LastName   String?
+  guardian2Email      String?
+  guardian2Phone      String?
+  guardian2SecondaryPhone String?
+  guardian2Address    String?
+  guardian2City       String?
+  guardian2State      String?
+  guardian2Zip        String?
+  guardian2DriversLicenseId String?
+  guardian2Relationship String?
+
+  notes           String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  children        Child[]
+
+  @@unique([organizationId, pin])
+}
+
+model Child {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  isActive            Boolean   @default(true)
+  enrollDate          DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+
+  firstName           String
+  lastName            String
+  dateOfBirth         DateTime?
+  gender              String?
+  classroom           String?
+  locationId          String?
+
+  guardianId          String?
+
+  daysOfWeek          String?
+  hours               String?
+  livesWith           String?
+  custodyPapers       Boolean   @default(false)
+
+  specialCareNeeds    String?
+  specialCareDetails  String?
+  allergies           String?
+  allergyPlan         String?
+  immunizationsOnFile Boolean   @default(true)
+
+  school              String?
+  schoolPhone         String?
+
+  pickup1FirstName    String?
+  pickup1LastName     String?
+  pickup1Phone        String?
+  pickup1WorkPhone    String?
+  pickup2FirstName    String?
+  pickup2LastName     String?
+  pickup2Phone        String?
+  pickup2WorkPhone    String?
+  pickup3FirstName    String?
+  pickup3LastName     String?
+  pickup3Phone        String?
+  pickup3WorkPhone    String?
+  pickup4FirstName    String?
+  pickup4LastName     String?
+  pickup4Phone        String?
+  pickup4WorkPhone    String?
+
+  emergencyContact    String?
+
+  physicianFirstName  String?
+  physicianLastName   String?
+  physicianAddress    String?
+  physicianPhone      String?
+  physicianCity       String?
+  physicianState      String?
+
+  hospitalName        String?
+  hospitalPhone       String?
+  hospitalAddress     String?
+  hospitalCity        String?
+  hospitalState       String?
+
+  consentPhotos       Boolean   @default(true)
+  consentTransport    Boolean   @default(true)
+  consentWater        Boolean   @default(true)
+  consentTylenol      Boolean   @default(true)
+  notes               String?
+
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  location            Location?    @relation(fields: [locationId], references: [id])
+  guardian            Guardian?    @relation(fields: [guardianId], references: [id])
+  attendance          ChildAttendance[]
+}
+
+model ChildAttendance {
+  id          String   @id @default(uuid())
+  childId     String
+  checkIn     DateTime @default(now())
+  checkOut    DateTime?
+  checkedInBy String?
+  checkedOutBy String?
+
+  child       Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+}

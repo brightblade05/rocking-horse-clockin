@@ -1,26 +1,77 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Palette - Vibrant & Playful */
+  --color-primary: #E63946;   /* Red */
+  --color-secondary: #457B9D; /* Blue */
+  --color-accent: #FFD166;    /* Yellow/Gold */
+  --color-success: #06D6A0;   /* Green */
+  --color-dark: #1D3557;      /* Navy text */
+  --color-light: #F1FAEE;     /* Off-white background */
+  --color-white: #FFFFFF;
+  --color-gray: #E5E5E5;
+  
+  --spacing-unit: 8px;
+  --border-radius: 12px;
+  
+  --font-family: system-ui, -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--color-light);
+  color: var(--color-dark);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Utility / Common */
+.btn {
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.card {
+  background: white;
+  padding: 24px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--color-gray);
+  border-radius: var(--border-radius);
+  font-size: 16px;
+}
+
+.input:focus {
+  border-color: var(--color-secondary);
+  outline: none;
 }
