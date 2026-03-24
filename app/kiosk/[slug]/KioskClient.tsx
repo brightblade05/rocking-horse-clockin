@@ -154,7 +154,7 @@ export default function KioskClient({ org }: Props) {
                     ))}
                     <button type="button" onClick={handleClear} className="btn" style={{ backgroundColor: 'var(--color-gray)', color: 'black', fontSize: '1.2rem' }}>CLR</button>
                     <button type="button" onClick={() => handleNumClick('0')} className="btn btn-secondary" style={{ fontSize: '1.5rem', padding: '20px' }}>0</button>
-                    <button type="button" onClick={handleSubmit} className="btn btn-primary" disabled={loading} style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button type="button" onClick={handleSubmit} className="btn btn-primary" disabled={loading || pin.length < 4} style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {loading ? '...' : 'GO'}
                     </button>
                 </div>

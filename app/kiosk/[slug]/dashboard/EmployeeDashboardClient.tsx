@@ -9,9 +9,10 @@ type Props = {
     // schedule: any
     roles: any[]
     todayString: string
+    orgSlug: string
 }
 
-export default function DashboardClient({ user, currentPunch, roles, todayString }: Props) {
+export default function EmployeeDashboardClient({ user, currentPunch, roles, todayString, orgSlug }: Props) {
 
     const [loading, setLoading] = useState(false)
     const [modalMode, setModalMode] = useState<'NONE' | 'NOTE_IN' | 'NOTE_OUT' | 'SWITCH'>('NONE')

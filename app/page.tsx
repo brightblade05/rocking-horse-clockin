@@ -8,12 +8,16 @@ type Org = { id: string; name: string; slug: string }
 export default function Home() {
     const [orgs, setOrgs] = useState<Org[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         fetch('/api/orgs')
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error('API Error')
+                return r.json()
+            })
             .then(data => { setOrgs(data); setLoading(false) })
-            .catch(() => setLoading(false))
+            .catch(() => { setError(true); setLoading(false) })
     }, [])
 
     return (
@@ -35,6 +39,19 @@ export default function Home() {
 
             {loading ? (
                 <p style={{ color: 'rgba(255,255,255,0.7)' }}>Loading...</p>
+            ) : error ? (
+                <div style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,0,0,0.3)',
+                    padding: '30px',
+                    textAlign: 'center',
+                    color: 'white',
+                    maxWidth: '400px',
+                }}>
+                    <p style={{ marginBottom: '10px' }}>Failed to load organizations.</p>
+                    <p style={{ fontSize: '0.9em', opacity: 0.8 }}>Could not connect to the database or API.</p>
+                </div>
             ) : orgs.length === 0 ? (
                 <div style={{
                     background: 'rgba(255,255,255,0.1)',

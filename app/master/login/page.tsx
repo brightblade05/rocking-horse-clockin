@@ -8,6 +8,7 @@ export default function MasterLoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [showHelp, setShowHelp] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -131,6 +132,20 @@ export default function MasterLoginPage() {
                     >
                         {loading ? 'Authenticating...' : 'Sign In'}
                     </button>
+                    <div style={{ textAlign: 'right', marginTop: '-4px' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setShowHelp(!showHelp)}
+                            style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}
+                        >
+                            Forgot Password?
+                        </button>
+                    </div>
+                    {showHelp && (
+                        <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '12px', color: '#93c5fd', fontSize: '0.85rem', textAlign: 'center', marginTop: '4px' }}>
+                            Master Admin passwords are set via the server environment variables. Please check your hosting provider (e.g., Vercel) and update the <code>MASTER_ADMIN_PASSWORD</code> environment variable, then redeploy.
+                        </div>
+                    )}
                 </form>
                 <div style={{ marginTop: '24px', textAlign: 'center' }}>
                     <a href="/" style={{ color: '#64748b', fontSize: '0.85rem', textDecoration: 'none' }}>← Back to Home</a>
