@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { exportEmployeesCsv, importEmployeesCsv } from '@/app/actions/admin-users'
 import { toggleEmployeeStatus } from '@/app/actions/admin-users'
 
@@ -22,6 +23,7 @@ type Employee = {
 type Props = { employees: Employee[] }
 
 export default function EmployeeListClient({ employees }: Props) {
+    const router = useRouter()
     const [importMsg, setImportMsg] = useState('')
 
     const handleExport = async () => {
@@ -43,6 +45,7 @@ export default function EmployeeListClient({ employees }: Props) {
 
     const handleToggle = async (id: string, isActive: boolean) => {
         await toggleEmployeeStatus(id, !isActive)
+        router.refresh()
     }
 
     return (

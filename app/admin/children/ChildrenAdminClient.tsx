@@ -158,6 +158,7 @@ export default function ChildrenAdminClient({ children, guardians, todayAttendan
         if (!confirm(`Archive ${child.firstName} ${child.lastName}?`)) return
         const fd = new FormData(); fd.append('id', child.id)
         await deleteChild(fd)
+        router.refresh()
     }
 
     const openEditChild = (c: Child) => {
@@ -456,8 +457,11 @@ export default function ChildrenAdminClient({ children, guardians, todayAttendan
                                         {showArchived ? (
                                             <button className="btn" style={{ fontSize: '0.8rem', padding: '6px 10px', background: '#e8f5e9', color: 'green' }} onClick={() => unarchiveEntity('guardian', g.id)}>Unarchive</button>
                                         ) : (
-                                            <button className="btn" style={{ fontSize: '0.8rem', padding: '6px 10px', background: '#fff0f0', color: '#e63946' }} onClick={() => {
-                                                if (confirm(`Archive ${g.firstName} ${g.lastName}?`)) deleteGuardian(g.id)
+                                            <button className="btn" style={{ fontSize: '0.8rem', padding: '6px 10px', background: '#fff0f0', color: '#e63946' }} onClick={async () => {
+                                                if (confirm(`Archive ${g.firstName} ${g.lastName}?`)) {
+                                                    await deleteGuardian(g.id)
+                                                    router.refresh()
+                                                }
                                             }}>Archive</button>
                                         )}
                                     </td>
