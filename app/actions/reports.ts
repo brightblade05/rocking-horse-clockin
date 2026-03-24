@@ -75,11 +75,11 @@ export async function getPayrollReport(startDate: Date, endDate: Date) {
                 roleMs[rId] += ms
 
                 if (!roleData[rId]) {
-                    let rate = user.baseRate
+                    let rate = Number(user.baseRate || 0)
                     if (rId !== 'default') {
-                        const ur = user.userRoles.find(ur => ur.roleId === rId)
-                        if (ur) rate = ur.rate
-                        else rate = currentRole?.defaultRate || user.baseRate
+                        const ur = user.userRoles?.find(ur => ur.roleId === rId)
+                        if (ur) rate = Number(ur.rate)
+                        else rate = Number(currentRole?.defaultRate || user.baseRate || 0)
                     }
                     roleData[rId] = { name: currentRole?.name || 'General', rate }
                 }
@@ -97,7 +97,8 @@ export async function getPayrollReport(startDate: Date, endDate: Date) {
         if (user.payType === 'SALARY' && user.yearlySalary) {
             const msInDay = 1000 * 60 * 60 * 24
             const daysInPeriod = Math.round((end.getTime() - start.getTime()) / msInDay)
-            grossPay = (user.yearlySalary / 365) * daysInPeriod
+            const yearlySal = Number(user.yearlySalary)
+            grossPay = (yearlySal / 365) * daysInPeriod
             details.push({
                 roleName: 'Salary (Prorated for Period)',
                 hours: totalHours,
@@ -115,7 +116,7 @@ export async function getPayrollReport(startDate: Date, endDate: Date) {
         }
 
         if (totalHours > 0) {
-            const accruedPto = totalHours * user.ptoRate
+            const accruedPto = totalHours * Number(user.ptoRate || 0)
             report.push({
                 userId: user.id,
                 name: user.name,

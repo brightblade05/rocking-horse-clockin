@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { getChildrenByGuardianPin, checkInChild, checkOutChild } from '@/app/actions/children'
+import { useIdleTimeout } from '@/app/hooks/useIdleTimeout'
 
 type Child = {
     id: string
@@ -103,6 +104,10 @@ export default function GuardianCheckinClient({ orgSlug }: { orgSlug: string }) 
         setPin(''); setGuardian(null); setChildren([])
         setSelectedChild(null); setPinError(''); setScreen('PIN')
     }
+
+    useIdleTimeout(() => {
+        if (screen !== 'PIN') fullReset()
+    }, 60000)
 
     // ─────────────────────── RENDER ───────────────────────────
     return (

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { clockIn, clockOut, switchDuty } from '@/app/actions/punch'
+import { useIdleTimeout } from '@/app/hooks/useIdleTimeout'
 
 type Props = {
     user: any
@@ -15,10 +16,14 @@ type Props = {
 export default function EmployeeDashboardClient({ user, currentPunch, roles, todayString, orgSlug }: Props) {
 
     const [loading, setLoading] = useState(false)
-    const [modalMode, setModalMode] = useState<'NONE' | 'NOTE_IN' | 'NOTE_OUT' | 'SWITCH'>('NONE')
+    const [modalMode, setModalMode] = useState<'NONE' | 'NOTE_IN' | 'NOTE_OUT' | 'SWITCH' | 'COMING_SOON'>('NONE')
     const [noteMessage, setNoteMessage] = useState('')
     const [noteInput, setNoteInput] = useState('')
     const [selectedRole, setSelectedRole] = useState('')
+
+    useIdleTimeout(() => {
+        import('@/app/actions/auth').then(m => m.logout())
+    }, 60000)
 
     const handleClockIn = async (roleId?: string, note?: string) => {
         setLoading(true)
@@ -179,6 +184,21 @@ export default function EmployeeDashboardClient({ user, currentPunch, roles, tod
                             </>
                         )}
 
+                        {modalMode === 'COMING_SOON' && (
+                            <div style={{ padding: '20px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🚧</div>
+                                <h2 style={{ color: 'var(--color-primary)' }}>Coming Soon</h2>
+                                <p style={{ color: '#666', marginTop: '10px' }}>This feature is scheduled for a future update. Check back soon!</p>
+                                <button
+                                    onClick={() => setModalMode('NONE')}
+                                    className="btn btn-primary"
+                                    style={{ marginTop: '24px' }}
+                                >
+                                    Got It
+                                </button>
+                            </div>
+                        )}
+
                         {(modalMode === 'NOTE_IN' || modalMode === 'NOTE_OUT') && (
                             <>
                                 <h3 style={{ color: 'var(--color-primary)' }}>Note Required</h3>
@@ -218,12 +238,12 @@ export default function EmployeeDashboardClient({ user, currentPunch, roles, tod
             <div style={{ marginTop: '40px', display: 'grid', gap: '20px', gridTemplateColumns: '1fr 1fr' }}>
                 <div className="card">
                     <h3>My Schedule</h3>
-                    <p style={{ color: '#888' }}>No schedule for today (Demo)</p>
-                    <button className="btn" style={{ marginTop: '10px', border: '1px solid #ccc' }}>View Full Schedule</button>
+                    <p style={{ color: '#888' }}>No upcoming shifts found.</p>
+                    <button onClick={() => setModalMode('COMING_SOON')} className="btn" style={{ marginTop: '10px', border: '1px solid #ccc' }}>View Full Schedule</button>
                 </div>
                 <div className="card">
                     <h3>Time Off</h3>
-                    <button className="btn" style={{ marginTop: '10px', border: '1px solid #ccc' }}>Request Time Off</button>
+                    <button onClick={() => setModalMode('COMING_SOON')} className="btn" style={{ marginTop: '10px', border: '1px solid #ccc' }}>Request Time Off</button>
                 </div>
             </div>
         </div>
